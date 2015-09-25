@@ -1,57 +1,87 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
+#-*- coding: UTF-8 -*-
+import os
+import os.path
+import shutil
+import time,datetime
 
-# C extensions
-*.so
+def copyFiles(sourceDir,  targetDir): #把某一目录下的所有文件复制到指定目录中
+     if sourceDir.find(".svn") > 0:
+         return
+     for file in os.listdir(sourceDir):
+         sourceFile = os.path.join(sourceDir,  file)
+         targetFile = os.path.join(targetDir,  file)
+         if os.path.isfile(sourceFile):
+             if not os.path.exists(targetDir):
+                 os.makedirs(targetDir)
+             if not os.path.exists(targetFile) or(os.path.exists(targetFile) and (os.path.getsize(targetFile) != os.path.getsize(sourceFile))):
+                     open(targetFile, "wb").write(open(sourceFile, "rb").read())
+         if os.path.isdir(sourceFile):
+             First_Directory = False
+             copyFiles(sourceFile, targetFile)
 
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
+def moveFileto(sourceDir,  targetDir):#复制指定文件到目录
+    for file in os.listdir(sourceDir):
+         sourceFile = os.path.join(sourceDir,  file)
+         targetFile = os.path.join(targetDir,  file)
+         if os.path.isfile(sourceFile):
+             if not os.path.exists(targetDir):
+                 os.makedirs(targetDir)
+    shutil.copy(sourceDir,  targetDir)
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+def getCurTime():#返回当前的日期，以便在创建指定目录的时候用
+     nowTime = time.localtime()
+     year = str(nowTime.tm_year)
+     month = str(nowTime.tm_mon)
+     if len(month) < 2:
+         month = '0' + month
+     day =  str(nowTime.tm_mday)
+     if len(day) < 2:
+         day = '0' + day
+     return (year + '-' + month + '-' + day)
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
+def info(update_path,backup_path,his_path,user):
+    a = len('**************************************************************************')
+    print '***************************************************************************'
+    print u'*欢迎使用非常牛逼十分好用懒人必备的更新备份脚本V1.0                       *'.encode('gbk')
+    print ((u'*更新文件夹路径为：'.encode('gbk')+update_path).ljust(a) + '*')
+    print ((u'*备份文件夹路径为：'.encode('gbk')+backup_path).ljust(a) + '*')
+    print ((u'*his文件夹路径为：'.encode('gbk')+his_path).ljust(a) + '*')
+    print ((u'*使用人：'.encode('gbk')+user).ljust(a) + '*')
+    print '***************************************************************************'
 
-# Translations
-*.mo
-*.pot
 
-# Django stuff:
-*.log
 
-# Sphinx documentation
-docs/_build/
 
-# PyBuilder
-target/
+if  __name__ =="__main__":#主函数
+    update_path = u"E:/cyy/cyy/更新文件/".encode('gbk')
+    backup_path=u"E:/cyy/cyy/备份文件/".encode('gbk')
+    his_path = u'D:/HIS安装程序/HIS50/'.encode('gbk')
+    user = u'蔡钰莹'.encode('gbk')
+    info(update_path,backup_path,his_path,user)
+    formatTime = getCurTime()
+    update_folder_name=raw_input(u'输入更新目的：'.encode('gbk'))
+    targetFoldername =  formatTime + '  '+update_folder_name
+    backup_Path_new = backup_path + targetFoldername + '/new/'
+    copyFiles(update_path,backup_Path_new)   #将更新文件拷到new文件夹中备份
+    backup_Path_old  = backup_path + targetFoldername + '/old/'
+    if not os.path.exists(backup_Path_old):
+        os.makedirs(backup_Path_old)
+    log = open(backup_path+'update.log','a')
+    for dirpath, dirnames, filenames in os.walk(update_path):
+        for filename in filenames:
+            if os.path.isdir(his_path):
+                if not os.path.isfile(his_path+filename):
+                    print u'HIS目录中没有'.encode('gbk')+filename
+                    log.write(formatTime+'\t'+filename+'\t'+user+'\n')
+                    continue
+                else:
+                    shutil.copy(his_path+filename,backup_Path_old+filename)   #从HIS文件夹中将文件拷出备份
+                    print filename+u'已成功备份'.encode('gbk')
+                    log.write(formatTime+'\t'+filename+'\t'+user+'\n')
+            else:
+                print u'HIS目录不存在'.encode('gbk')
+                break
+    os.system('pause')
+
+            
