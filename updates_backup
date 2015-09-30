@@ -4,6 +4,7 @@ import os.path
 import shutil
 import time
 import ConfigParser
+import glob
 
 def copyFiles(sourceDir,  targetDir): #把某一目录下的所有文件复制到指定目录中
      if sourceDir.find(".svn") > 0:
@@ -44,12 +45,30 @@ def getCurTime():#返回当前的日期，以便在创建指定目录的时候�
 def info(update_path,backup_path,his_path,user):
     a = len('**************************************************************************')
     print '***************************************************************************'
-    print u'*欢迎使用非常牛逼十分好用懒人必备的更新备份脚本V1.1                       *'.encode('gbk')
+    print u'*欢迎使用非常牛逼十分好用懒人必备的更新备份脚本V2.0                       *'.encode('gbk')
     print ((u'*更新文件夹路径为：'.encode('gbk')+update_path).ljust(a) + '*')
     print ((u'*备份文件夹路径为：'.encode('gbk')+backup_path).ljust(a) + '*')
     print ((u'*his文件夹路径为：'.encode('gbk')+his_path).ljust(a) + '*')
     print ((u'*使用人：'.encode('gbk')+user).ljust(a) + '*')
     print '***************************************************************************'
+
+def pathdir(path):
+    files = []
+    for aa in glob.glob( path + os.sep + '*' ): # '*'代表匹配所有文件
+        if os.path.isdir(aa):
+            files.extend(pathdir(aa))
+        else:
+            files.append(aa)
+    return files
+
+
+def compairfiles(dir,filename):
+    files = pathdir(dir)
+    for file in files:
+        if os.path.basename(file) == filename:
+            return True
+    return False
+
 
 
 
@@ -80,21 +99,34 @@ if  __name__ =="__main__":#主函数
     for dirpath, dirnames, filenames in os.walk(update_path):
             for filename in filenames:
                 if os.path.isdir(his_path):
-                    if not os.path.isfile(os.path.join(his_path,filename)):
+                    if compairfiles(his_path,filename) == False:
                         print u'HIS目录中没有'.encode('gbk')+filename
-                        log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\n')
+                        log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\t'+u'新增'.encode('gbk')+'\n')
                         continue
-                    else:
-                        shutil.copy(os.path.join(his_path,filename),os.path.join(backup_Path_old,filename))   #从HIS文件夹中将文件拷出备份
-                        print filename+u'已成功备份'.encode('gbk')
-                        log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\n')
-                else:
-                    print u'HIS目录不存在'.encode('gbk')
-                    break
+                    else :
+                        files = pathdir(his_path)
+                        for file in files:
+                            p,name = os.path.split(file);
+                            #name = os.path.basename(file)
+                            if name == filename:
+                                shutil.copy(file,os.path.join(backup_Path_old,filename))   #从HIS文件夹中将文件拷出备份
+                                print filename+u'已成功备份'.encode('gbk')
+                                log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\t'+u'更新'.encode('gbk')+'\n')
+                                break
 
     log.close()
-
-
     os.system('pause')
+
+
+
+
+
+
+
+
+
+
+
+
 
 
