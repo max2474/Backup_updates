@@ -55,48 +55,46 @@ def info(update_path,backup_path,his_path,user):
 
 
 if  __name__ =="__main__":#主函数
-    #update_path = u"E:/cyy/cyy/更新文件/".encode('gbk')
-    #backup_path=u"E:/cyy/cyy/备份文件/".encode('gbk')
-    #his_path = u'D:/HIS安装程序/HIS50/'.encode('gbk')
-    #user = u'蔡钰莹'.encode('gbk')
-    config = ConfigParser.ConfigParser()
-    config.read("config.ini")
+    try:
+        config = ConfigParser.ConfigParser()
+        config.read("config.ini")
+    except:
+        print(u'配置文件不存在'.encode('gbk'))
+        os.system('pause')
     update_path=config.get("path","update_path")
     if os.path.exists(update_path):
         update_path=os.path.normcase((update_path))
     backup_path=config.get("path","backup_path")
     his_path=config.get("path","his_path")
     user=config.get("user","user")
-    print(update_path)
     info(update_path,backup_path,his_path,user)
     formatTime = getCurTime()
     update_folder_name=raw_input(u'输入更新目的：'.encode('gbk'))
     targetFoldername =  formatTime + '  '+update_folder_name
-    #backup_Path_new = backup_path + targetFoldername + '/new/'
     backup_Path_new = os.path.join(os.path.join(backup_path,targetFoldername),'new')
-    print(backup_Path_new)
     copyFiles(update_path,backup_Path_new)   #将更新文件拷到new文件夹中备份
-    #backup_Path_old  = backup_path + targetFoldername + '/old/'
     backup_Path_old = os.path.join(os.path.join(backup_path,targetFoldername),'old')
     if not os.path.exists(backup_Path_old):
         os.makedirs(backup_Path_old)
-    #log = open(backup_path+'update.log','a')
     log = open(os.path.join(backup_path,'update.log'),'a')
     for dirpath, dirnames, filenames in os.walk(update_path):
-        for filename in filenames:
-            if os.path.isdir(his_path):
-                if not os.path.isfile(os.path.join(his_path,filename)):
-                    print u'HIS目录中没有'.encode('gbk')+filename
-                    log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\n')
-                    continue
+            for filename in filenames:
+                if os.path.isdir(his_path):
+                    if not os.path.isfile(os.path.join(his_path,filename)):
+                        print u'HIS目录中没有'.encode('gbk')+filename
+                        log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\n')
+                        continue
+                    else:
+                        shutil.copy(os.path.join(his_path,filename),os.path.join(backup_Path_old,filename))   #从HIS文件夹中将文件拷出备份
+                        print filename+u'已成功备份'.encode('gbk')
+                        log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\n')
                 else:
-                    shutil.copy(os.path.join(his_path,filename),os.path.join(backup_Path_old,filename))   #从HIS文件夹中将文件拷出备份
-                    print filename+u'已成功备份'.encode('gbk')
-                    log.write(update_folder_name+'\t'+formatTime+'\t'+filename+'\t'+user+'\n')
-            else:
-                print u'HIS目录不存在'.encode('gbk')
-                break
+                    print u'HIS目录不存在'.encode('gbk')
+                    break
 
     log.close()
+
+
     os.system('pause')
+
 
